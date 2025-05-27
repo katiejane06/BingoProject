@@ -41,7 +41,7 @@ bingoCard *createCard() {
     // Allocate memory for a new bingo card
     bingoCard *card = (bingoCard *)malloc(sizeof(bingoCard));
     if (card == NULL) {
-        printf("Memory allocation failed\n");
+        printw("Memory allocation failed\n");
         return NULL;
     }
     // Initialize the card
@@ -70,12 +70,50 @@ void printCard(bingoCard *card) {
         for (int j = 0; j < COLS; j++) {
             if (card->card[i][j] == 0 || card->marked[i][j] == 1) {
                 // Print marked numbers or free space
-                printf(" *  ");
+                printw(" *  ");
             } else {
-                printf("%2d  ", card->card[i][j]);
+                printw("%2d  ", card->card[i][j]);
             }
         }
-        printf("\n");
+        printw("\n");
     }
-    printf("\n");
+    printw("\n");
 }
+
+void markSpace(bingoCard *card, int row, int col) {
+    // Mark a space on the card
+    if (row < 0 || row >= ROWS || col < 0 || col >= COLS) {
+        printw("Invalid row or column index\n");
+        return;
+    }
+    if (card->marked[row][col] == 1) {
+        printw("Space already marked\n");
+        return;
+    }
+    card->marked[row][col] = 1; // Mark the space
+    card->numMarked++; // Increment the number of marked spaces
+}
+
+void printCardNC(bingoCard *card, WINDOW *win) {
+    // Print the bingo card using ncurses
+    if(win == NULL) {
+        printw("Window is NULL\n");
+        return;
+    }
+    werase(win);
+    box(win, 0, 0); // Draw a box around the window
+    mvwprintw(win, 1, 2, " B   I   N   G   O");
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if (card->card[i][j] == 0 || card->marked[i][j] == 1) {
+                // Print marked numbers or free space
+                mvwprintw(win, i + 2, (j * 4)+2, " *  ");
+            } else {
+                mvwprintw(win, i + 2, (j * 4)+2, "%2d  ", card->card[i][j]);
+            }
+        }
+    }
+    move(0,0);
+    wrefresh(win);
+}
+

@@ -4,15 +4,19 @@
 //Last Updated: 5/20/2025
 //Description: This file contains the function prototypes and constants for the bingo card structure.
 
+#ifndef PROJBINGO_H
+#define PROJBINGO_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <ncurses.h>
 
 #define ROWS 5
 #define COLS 5
 #define BALLS 75
-#define B 0, I 1, N 2, G 3, O 4
+enum Columns { B = 0, I, N, G, O };
 
 typedef struct _bingoCard {
     int card[ROWS][COLS];
@@ -30,4 +34,9 @@ void printCard(bingoCard *card);
 int randomNumber(int min, int max);
 int testRepeat(bingoCard *card , int row, int col, int newNum);
 void printCard(bingoCard *card);
+void markSpace(bingoCard *card, int row, int col);
+void beginDisplay(bingoCard *card);
+void printCardNC(bingoCard *card, WINDOW *win);
 bingoCard *createCard();
+
+#endif // PROJBINGO_H
