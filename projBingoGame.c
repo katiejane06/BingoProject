@@ -1,4 +1,5 @@
 #include "projBingoGame.h"
+//want to make it so its vs a variable number of computers, generate a card for each computer and track when they get bingo
 
 bingoGame *createGame() {
     // Allocate memory for a new bingo game
@@ -80,13 +81,20 @@ int get_column_enum(char c) {
 int daubSpace(bingoCard *card) {
     int row, col;
     // player will input a letter and a number to daub a space
-    printw("Enter Daub locatio : ");
-    scanw("%c%d", &row, &col);
+    printw("Enter Daub location (e.g., B3): ");
+    echo(); // Enable echo to see input
+    scanw(" %c%d", &row, &col);
+    noecho(); // Disable echo after input
     int colEnum = get_column_enum(row);
     if (colEnum == -1 || col < 1 || col > COLS) {
         printw("Invalid input. Please enter a valid column letter (B, I, N, G, O) and a number between 1 and %d.\n", COLS);
         return -1; // Invalid input
     }
+    col = col - 1; // Convert to zero-based index
+    row = colEnum; // Use the column enum as the row index
+    markSpace(card, row, col); // Mark the space on the card
+    //need to create function to update the card display
+    return 0; // Successfully daubed the space
 }
 
 int gamePlay() {
@@ -105,6 +113,8 @@ int gamePlay() {
         getch();
 
         callBall(game); // Call a ball
+        while(daubSpace(playerCard) == -1); // Prompt the user to daub a space until valid input is given
+
 
        getch(); // Wait for user input to continue
        endwin();

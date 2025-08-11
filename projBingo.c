@@ -1,9 +1,9 @@
 #include "projBingo.h"
 
-int testRepeat(bingoCard *card, int row, int col, int newNum) {
+int testRepeat(int card[ROWS][COLS], int row, int col, int newNum) {
     //check if the number is already in the card
     for (int i = 0; i < ROWS; i++) {
-        if(card->card[i][col] == newNum)
+        if(card[i][col] == newNum)
             return 1; // number already exists in the column
     }
     return 0; // number does not exist in the card
@@ -14,19 +14,18 @@ int randomNumber(int min, int max) {
     return (rand() % (max - min + 1)) + min;
 }
 
-void initializeColumn(bingoCard * card, int col, int min, int max)
-{
+void initializeColumn(int card [ROWS][COLS], int col, int min, int max) {
     // Initialize a column with random numbers between min and max
     for (int i = 0; i < ROWS; i++) {
         int newNum;
         do {
             newNum = randomNumber(min, max);
         } while (testRepeat(card, i, col, newNum));
-        card->card[i][col] = newNum;
+        card[i][col] = newNum;
     }
 }
 
-void initializeCard(bingoCard *card) {
+void initializeCard(int card [ROWS][COLS]) {
     // Initialize the card with random numbers column by column
     initializeColumn(card, 0, 1, 15);
     initializeColumn(card, 1, 16, 30);
@@ -34,33 +33,49 @@ void initializeCard(bingoCard *card) {
     initializeColumn(card, 3, 46, 60);
     initializeColumn(card, 4, 61, 75);
     // Set the center space to 0 (free space)
-    card->card[2][2] = 0;
+    card[2][2] = 0;
 }
 
 bingoCard *createCard() {
     // Allocate memory for a new bingo card
-    bingoCard *card = (bingoCard *)malloc(sizeof(bingoCard));
-    if (card == NULL) {
+    bingoCard *userCard = (bingoCard *)malloc(sizeof(bingoCard));
+    if (userCard == NULL) {
         printw("Memory allocation failed\n");
         return NULL;
     }
     // Initialize the card
-    initializeCard(card);
-    // Initialize the marked array
+    initializeCard(userCard->card);
+    // Initialize the marked arrays
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
-            card->marked[i][j] = 0;
-            card->expectedMarked[i][j] = 0; // Mark all spaces as unmarked
+            userCard->marked[i][j] = 0;
+            userCard->expectedMarked[i][j] = 0; // Mark all spaces as unmarked
         }
     }
-    card->marked[2][2] = 1; // Mark the free space
-    card->expectedMarked[2][2] = 1; // Mark the free space as expected
+    userCard->marked[2][2] = 1; // Mark the free space
+    userCard->expectedMarked[2][2] = 1; // Mark the free space as expected
     // Initialize other fields
-    card->numMarked = 1;
-    card->expectedNumMarked = 1;
-    card->bingo = 0;
+    userCard->numMarked = 1;
+    userCard->expectedNumMarked = 1;
+    userCard->bingo = 0;
 
-    return card;
+    return userCard;
+}
+
+computerCard *createComputerCard() {
+    // Allocate memory for a new computer bingo card
+    computerCard *compCard = (computerCard *)malloc(sizeof(computerCard));
+    if (compCard == NULL) {
+        printw("Memory allocation failed\n");
+        return NULL;
+    }
+    // Initialize the card
+    initializeCard(compCard->card);
+    // Initialize other fields
+    compCard->expectedNumMarked = 0;
+    compCard->bingo = 0;
+
+    return compCard;
 }
 
 void printCard(bingoCard *card) {
@@ -82,10 +97,6 @@ void printCard(bingoCard *card) {
 
 void markSpace(bingoCard *card, int row, int col) {
     // Mark a space on the card
-    if (row < 0 || row >= ROWS || col < 0 || col >= COLS) {
-        printw("Invalid row or column index\n");
-        return;
-    }
     if (card->marked[row][col] == 1) {
         printw("Space already marked\n");
         return;

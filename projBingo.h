@@ -1,7 +1,7 @@
 //Katherine Lawler
 //Bingo Card Header File
 //Start Date: 5/19/2025
-//Last Updated: 5/20/2025
+//Last Updated: 8/11/2025
 //Description: This file contains the function prototypes and constants for the bingo card structure.
 
 #ifndef PROJBINGO_H
@@ -12,6 +12,7 @@
 #include <string.h>
 #include <time.h>
 #include <ncurses.h>
+#include <ctype.h>
 
 #define ROWS 5
 #define COLS 5
@@ -26,17 +27,24 @@ typedef struct _bingoCard {
     int expectedNumMarked;
     int bingo;
 } bingoCard;
+typedef struct _computerCard {
+    int card[ROWS][COLS];
+    int expectedMarked[ROWS][COLS];
+    int expectedNumMarked;
+    int bingo;
+} computerCard;
 
 // Function prototypes
-void initializeColumn(bingoCard * card, int col, int min, int max);
-void initializeCard(bingoCard *card);
+void initializeColumn(int card [ROWS][COLS], int col, int min, int max);
+void initializeCard(int card [ROWS][COLS]);
 void printCard(bingoCard *card);
 int randomNumber(int min, int max);
-int testRepeat(bingoCard *card , int row, int col, int newNum);
+int testRepeat(int card [ROWS][COLS] , int row, int col, int newNum);
 void printCard(bingoCard *card);
 void markSpace(bingoCard *card, int row, int col);
 void beginDisplay(bingoCard *card);
 void printCardNC(bingoCard *card, WINDOW *win);
 bingoCard *createCard();
+computerCard *createComputerCard();
 
 #endif // PROJBINGO_H
