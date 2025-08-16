@@ -41,7 +41,7 @@ void printCall(int ballNum)
     refresh(); // Refresh the screen to show the printed call
     // Note: The mvprintw function is used for ncurses to print at specific coordinates
 }
-void callBall(bingoGame * game) {
+void callBall(bingoGame * game, bingoCard *card) {
     // Call a random ball number
     int ballNum;
     do {
@@ -50,6 +50,7 @@ void callBall(bingoGame * game) {
     game->balls[ballNum - 1] = 1; // Mark the ball as called
     game->numCalls++; // Increment the number of calls
     printCall(ballNum); // Print the called ball number
+    autoDaubCheck(card, ballNum); // Check if the called ball is on the card
     printw("\n");
     refresh(); // Refresh the screen to show the printed call
 }
@@ -60,7 +61,7 @@ void printCalls(bingoGame *game) {
     for (int i = 0; i < BALLS; i++) {
         if (game->balls[i] == 1) {
             printCall(i + 1); // Print the ball number
-            printw(" ");
+            printw(" (Hit key to daub space)\n");
         }
     }
     printw("\n");
@@ -78,22 +79,29 @@ int get_column_enum(char c) {
 }
 
 
-int daubSpace(bingoCard *card) {
+int daubSpace(bingoCard *card, WINDOW *win) {
     int row, col;
     // player will input a letter and a number to daub a space
+    clear(); // Clear the screen before prompting
+    printCardNC(card, win); // Print the current card state
+    refresh(); // Refresh to show the cleared screen
     printw("Enter Daub location (e.g., B3): ");
     echo(); // Enable echo to see input
-    scanw(" %c%d", &row, &col);
+    scanw(" %c%d", &col, &row);
+    if(col == '0'){
+        return 0;
+    }
     noecho(); // Disable echo after input
-    int colEnum = get_column_enum(row);
-    if (colEnum == -1 || col < 1 || col > COLS) {
+    int colEnum = get_column_enum(col);
+    if (colEnum == -1 || row < 1 || row > ROWS) {
         printw("Invalid input. Please enter a valid column letter (B, I, N, G, O) and a number between 1 and %d.\n", COLS);
+        getch(); // Wait for user to read the message
         return -1; // Invalid input
     }
-    col = col - 1; // Convert to zero-based index
-    row = colEnum; // Use the column enum as the row index
+    col = colEnum; // Convert to zero-based index
+    row = row - 1; // Convert to zero-based index
     markSpace(card, row, col); // Mark the space on the card
-    //need to create function to update the card display
+    printCardNC(card, win); // Print the card to show the marked space
     return 0; // Successfully daubed the space
 }
 
@@ -104,21 +112,32 @@ int gamePlay() {
     noecho(); // Don't echo input characters
     refresh();
     getch();
-    while (1) {
         WINDOW * card_win = newwin(8, 23, 4, 0); // Create a new window for the card
         bingoCard * playerCard = createCard(); // Create a new bingo card
         printCardNC(playerCard, card_win); // Print the bingo card in the window
         wrefresh(card_win); // Refresh the window to show the card
         bingoGame * game = createGame(); // Create a new bingo game
         getch();
+        while(game->numCalls < BALLS) {
+            werase(stdscr); // Clear the main screen
+            wrefresh(stdscr); // Refresh to show the cleared screen
+            printCardNC(playerCard, card_win); // Print the bingo card in the window
+            callBall(game, playerCard); // Call a ball
+            timeout(8000); // Set a timeout of 8 seconds for user input
+            int ch = getch(); // Wait for user input
+            timeout(-1);
+            if (ch != ERR){
+                // User input detected, daub a space
+                while(daubSpace(playerCard, card_win) == -1); // Prompt the user to daub a space until valid input is given
+            }
 
-        callBall(game); // Call a ball
-        while(daubSpace(playerCard) == -1); // Prompt the user to daub a space until valid input is given
+            if(bingoCheck(playerCard->expectedMarked) && bingoCheck(playerCard->card)) {
+                printw("Bingo! You won!\n");
+                break;
+            }
+        }
 
-
-       getch(); // Wait for user input to continue
-       endwin();
-       return 0; // For now, just return 1 to indicate the game continues
-    }
+    getch(); // Wait for user input to continue
+    endwin();
     return 0; // Game continues
 }

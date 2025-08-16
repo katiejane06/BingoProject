@@ -1,7 +1,7 @@
 //Katherine Lawler
 //Bingo Card Header File
 //Start Date: 5/19/2025
-//Last Updated: 8/11/2025
+//Last Updated: 8/15/2025
 //Description: This file contains the function prototypes and constants for the bingo card structure.
 
 #ifndef PROJBINGO_H
@@ -43,6 +43,8 @@ int testRepeat(int card [ROWS][COLS] , int row, int col, int newNum);
 void printCard(bingoCard *card);
 void markSpace(bingoCard *card, int row, int col);
 void beginDisplay(bingoCard *card);
+void autoDaubCheck(bingoCard *card, int ballNum);
+int bingoCheck(int card[ROWS][COLS]);
 void printCardNC(bingoCard *card, WINDOW *win);
 bingoCard *createCard();
 computerCard *createComputerCard();

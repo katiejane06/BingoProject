@@ -105,6 +105,52 @@ void markSpace(bingoCard *card, int row, int col) {
     card->numMarked++; // Increment the number of marked spaces
 }
 
+void autoDaubCheck(bingoCard *card, int ballNum) {
+    // Check if the called ball number is on the card and mark it in expectedMarked
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if (card->card[i][j] == ballNum) {
+                card->expectedMarked[i][j] = 1;
+                card->expectedNumMarked++; // Increment the expected number of marked spaces
+            }
+        }
+    }
+}
+
+int bingoCheck(int card[ROWS][COLS]) {
+    // Check for bingo in rows, columns, and diagonals
+    for (int i = 0; i < ROWS; i++) {
+        int rowBingo = 1;
+        int colBingo = 1;
+        for (int j = 0; j < COLS; j++) {
+            if (card[i][j] == 0) {
+                rowBingo = 0; // Row not complete
+            }
+            if (card[j][i] == 0) {
+                colBingo = 0; // Column not complete
+            }
+        }
+        if (rowBingo || colBingo) {
+            return 1; // Bingo found
+        }
+    }
+    // Check diagonals
+    int diag1Bingo = 1;
+    int diag2Bingo = 1;
+    for (int i = 0; i < ROWS; i++) {
+        if (card[i][i] == 0) {
+            diag1Bingo = 0; // Diagonal 1 not complete
+        }
+        if (card[i][ROWS - 1 - i] == 0) {
+            diag2Bingo = 0; // Diagonal 2 not complete
+        }
+    }
+    if (diag1Bingo || diag2Bingo) {
+        return 1; // Bingo found
+    }
+    return 0; // No bingo found
+}
+
 void printCardNC(bingoCard *card, WINDOW *win) {
     // Print the bingo card using ncurses
     if(win == NULL) {
